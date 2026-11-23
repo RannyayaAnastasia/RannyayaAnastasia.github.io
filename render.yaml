@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: rannyaya-club
+    runtime: node
+    plan: free
+    region: frankfurt
+    rootDir: club
+    buildCommand: npm install --omit=dev
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: rannyaya-club-db
+          property: connectionString
+
+databases:
+  - name: rannyaya-club-db
+    plan: free
+    region: frankfurt
+    ipAllowList: []
