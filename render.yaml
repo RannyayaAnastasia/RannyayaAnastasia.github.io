@@ -1,12 +1,12 @@
 services:
   - type: web
     name: rannyaya-club
-    runtime: node
+    runtime: python
     plan: free
     region: frankfurt
     rootDir: club
-    buildCommand: npm install --omit=dev
-    startCommand: npm start
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn --bind 0.0.0.0:$PORT --workers 1 --threads 4 app:app
     healthCheckPath: /health
     envVars:
       - key: DATABASE_URL

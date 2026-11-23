@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% macro fields(kind, item) %}
+<label>{{ 'Название книги' if kind == 'books' else 'Трек или альбом' }}<input name="title" maxlength="120" required value="{{ item.get('title', '') }}"></label>
+<label>{{ 'Автор' if kind == 'books' else 'Исполнитель' }}<input name="creator" maxlength="120" required value="{{ item.get('creator', '') }}"></label>
+{% if kind == 'music' %}
+<label>Ссылка <span class="muted">(необязательно)</span><input name="link" type="url" maxlength="500" value="{{ item.get('link', '') }}"></label>
+{% endif %}
+<label>Почему советуешь? <span class="muted">(необязательно)</span><textarea name="note" maxlength="600" rows="3">{{ item.get('note', '') }}</textarea></label>
+{% endmacro %}
+{% block content %}
+<h1>{{ title }}</h1>
+<div class="columns">
+  <section class="panel">
+    <h2>{{ 'Посоветовать книгу' if kind == 'books' else 'Посоветовать музыку' }}</h2>
+    <form method="post" action="{{ url_for('recommendations', kind=kind) }}" class="fields">
+      <input type="hidden" name="csrf" value="{{ g.member.csrf }}">
+      {{ fields(kind, {}) }}
+      <button>Добавить рекомендацию</button>
+    </form>
+  </section>
+  <section>
+    <h2>Рекомендации клуба</h2>
+    {% for item in items %}
+    <article class="panel recommendation">
+      <h3>{{ item.title }}</h3>
+      <p class="byline">{{ item.creator }} · советует {{ item.name }}</p>
+      {% if item.note %}<p class="preserve">{{ item.note }}</p>{% endif %}
+      {% if item.link %}<a href="{{ item.link }}" rel="nofollow noreferrer">Открыть ссылку</a>{% endif %}
+      {% if item.reaction or item.reply %}
+      <blockquote>
+        <strong>Анастасия{% if item.reaction %} · {{ reactions[item.reaction] }}{% endif %}</strong>
+        {% if item.reply %}<div class="preserve">{{ item.reply }}</div>{% endif %}
+      </blockquote>
+      {% endif %}
+      {% if g.member.id == item.member_id %}
+      <details>
+        <summary>Изменить или удалить</summary>
+        <form method="post" action="{{ url_for('change_recommendation', kind=kind, item_id=item.id, action='edit') }}" class="fields">
+          <input type="hidden" name="csrf" value="{{ g.member.csrf }}">
+          {{ fields(kind, item) }}
+          <button>Сохранить</button>
+        </form>
+        <form method="post" action="{{ url_for('change_recommendation', kind=kind, item_id=item.id, action='delete') }}">
+          <input type="hidden" name="csrf" value="{{ g.member.csrf }}">
+          <button class="subtle">Удалить рекомендацию</button>
+        </form>
+      </details>
+      {% endif %}
+      {% if g.member.owner %}
+      <details>
+        <summary>Ответить</summary>
+        <form method="post" action="{{ url_for('change_recommendation', kind=kind, item_id=item.id, action='reply') }}" class="fields">
+          <input type="hidden" name="csrf" value="{{ g.member.csrf }}">
+          <label>Отметка
+            <select name="reaction">
+              {% for key, label in reactions.items() %}
+              <option value="{{ key }}"{% if key == item.reaction %} selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </label>
+          <label>Ответ<textarea name="reply" rows="2" maxlength="600">{{ item.reply }}</textarea></label>
+          <button>Сохранить ответ</button>
+        </form>
+      </details>
+      {% endif %}
+    </article>
+    {% else %}
+    <p class="muted">Здесь появятся рекомендации участников.</p>
+    {% endfor %}
+    <nav class="pagination" aria-label="Страницы рекомендаций">
+      {% if number > 1 %}<a href="{{ url_for('recommendations', kind=kind, page=number-1) }}">Назад</a>{% endif %}
+      {% if has_more %}<a href="{{ url_for('recommendations', kind=kind, page=number+1) }}">Дальше</a>{% endif %}
+    </nav>
+  </section>
+</div>
+{% endblock %}

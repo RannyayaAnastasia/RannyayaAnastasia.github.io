@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="welcome">
+  <h1>Клуб Анастасии</h1>
+  <p class="lead">Здесь можно порекомендовать мне книгу или музыку и вместе отмечать тренировки.</p>
+  <p>Войди через ВК или Яндекс. Твоё имя в клубе, счётчик тренировок и рекомендации будут видны вошедшим участникам. Имя можно изменить в профиле.</p>
+  {% if error %}
+  <p class="notice" role="alert">Не удалось войти. Попробуй начать вход заново.</p>
+  {% endif %}
+  <div class="actions">
+    {% for provider, name in (('vk', 'ВК'), ('yandex', 'Яндекс')) %}
+      {% if providers[provider] %}
+      <a class="button {{ provider }}" href="{{ url_for('start_login', provider=provider) }}">Войти через {{ name }}</a>
+      {% else %}
+      <button class="{{ provider }}" disabled>Войти через {{ name }}</button>
+      {% endif %}
+    {% endfor %}
+  </div>
+  {% if not providers.vk or not providers.yandex %}
+  <p class="muted">Кнопки станут доступны после подключения входа.</p>
+  {% endif %}
+</section>
+{% endblock %}

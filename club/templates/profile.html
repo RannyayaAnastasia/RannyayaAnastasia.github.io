@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Профиль</h1>
+<section class="panel profile">
+  <form method="post" action="{{ url_for('profile') }}" class="fields">
+    <input type="hidden" name="csrf" value="{{ g.member.csrf }}">
+    <label>Имя в клубе<input name="name" maxlength="60" required value="{{ g.member.name }}"></label>
+    <button>Сохранить имя</button>
+  </form>
+  <p class="muted">Вход через {{ 'ВК' if g.member.provider == 'vk' else 'Яндекс' }}. Идентификатор профиля <code>{{ g.member.id }}</code>.</p>
+</section>
+{% endblock %}

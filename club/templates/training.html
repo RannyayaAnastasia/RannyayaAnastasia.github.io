@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Тренировки</h1>
+<p class="lead">{{ date_label(days[0].date) }} — {{ date_label(days[-1].date) }} · московское время</p>
+<section class="panel">
+  <h2>Моя неделя</h2>
+  <p>Нажми на день, чтобы отметить тренировку или снять отметку.</p>
+  <div class="calendar">
+    {% for day in days %}
+      {% if day.future %}
+      <button disabled title="{{ date_label(day.date) }}"><span>{{ day.name }}</span><strong>{{ day.date.day }}</strong></button>
+      {% else %}
+      <form method="post" action="{{ url_for('training') }}">
+        <input type="hidden" name="csrf" value="{{ g.member.csrf }}">
+        <input type="hidden" name="day" value="{{ day.value }}">
+        <button name="action" value="{{ 'remove' if day.marked else 'add' }}"
+                aria-pressed="{{ 'true' if day.marked else 'false' }}"
+                aria-label="{{ 'Снять отметку' if day.marked else 'Отметить тренировку' }}, {{ date_label(day.date) }}">
+          <span>{{ day.name }}</span><strong>{{ day.date.day }}</strong>
+        </button>
+      </form>
+      {% endif %}
+    {% endfor %}
+  </div>
+</section>
+<section class="panel">
+  <h2>Общая доска</h2>
+  <p>На этой неделе тренировались <strong>{{ active }} из {{ board|length }}</strong> участников.</p>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th scope="col">Участник</th><th scope="col">Тренировок за неделю</th><th scope="col">Серия, нед.</th></tr></thead>
+      <tbody>
+        {% for member in board %}
+        <tr>
+          <th scope="row">{{ member.name }}{% if member.id == g.member.id %} <span class="muted">(ты)</span>{% endif %}</th>
+          <td>{{ member.count }}</td><td>{{ member.streak }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <p class="muted footnote">Для серии достаточно одной тренировки в неделю. Текущая неделя может продлить серию до воскресенья включительно.</p>
+</section>
+{% endblock %}

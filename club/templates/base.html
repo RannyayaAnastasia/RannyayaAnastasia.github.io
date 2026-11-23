@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#191e1b">
+  <meta name="robots" content="noindex">
+  <title>{{ title }} · Клуб Анастасии</title>
+  <link rel="stylesheet" href="{{ url_for('stylesheet') }}">
+</head>
+<body>
+  <a class="skip" href="#main">Перейти к содержанию</a>
+  <header class="site-header">
+    <div class="wrap top"><a href="{{ url_for('home') }}">Клуб Анастасии</a><a href="{{ portfolio }}">Портфолио</a></div>
+  </header>
+  <main class="wrap" id="main">
+    {% if g.member %}
+    <div class="member-bar">
+      <span>Привет, {{ g.member.name }}!</span>
+      <a href="{{ url_for('profile') }}">Профиль</a>
+      <form method="post" action="{{ url_for('logout') }}">
+        <input type="hidden" name="csrf" value="{{ g.member.csrf }}">
+        <button class="subtle">Выйти</button>
+      </form>
+    </div>
+    <nav class="tabs" aria-label="Разделы клуба">
+      {% for key, name in sections.items() %}
+      {% set path = url_for('training') if key == 'training' else url_for('recommendations', kind=key) %}
+      <a href="{{ path }}"{% if current == key %} aria-current="page"{% endif %}>{{ name }}</a>
+      {% endfor %}
+    </nav>
+    {% endif %}
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>
